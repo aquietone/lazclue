@@ -82,7 +82,7 @@ mq.event('blackdrake7', '#*#the less you see#*#', function() mq.cmdf('/popcustom
 mq.event('blackdrake8', '#*#What has keys#*#', function() mq.cmdf('/popcustom 5 Piano') blackDrakeClue = 'piano' end)
 
 mq.event('antediluvianWho', '#*#The flames whisper... the murderer is #1#.', function(line, who) reportWhoClue(who) end)
--- mq.event('antediluvianWhere', '#*#The flames whisper... the #1#.', function(line, where)  end)
+mq.event('antediluvianWhere', '#*#The flames show... the crime took place in the #1#.', function(line, where) clues.Where = where mq.cmdf('/popcustom 5 The crime took place in the %s', where) end)
 -- mq.event('antediluvianWhat', '#*#The flames whisper... the #1#.', function(line, what)  end)
 
 local function updateLocation(line, where)
