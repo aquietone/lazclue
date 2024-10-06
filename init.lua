@@ -84,7 +84,7 @@ mq.event('blackdrake8', '#*#What has keys#*#', function() mq.cmdf('/popcustom 5 
 
 mq.event('antediluvianWho', '#*#The flames whisper... the murderer is #1#.', function(line, who) reportWhoClue(who) end)
 mq.event('antediluvianWhere', '#*#The flames show... the crime took place in the #1#.', function(line, where) clues.Where = where mq.cmdf('/popcustom 5 The crime took place in the %s', where) end)
--- mq.event('antediluvianWhat', '#*#The flames whisper... the #1#.', function(line, what)  end)
+mq.event('antediluvianWhat', '#*#The flames reveal... the weapon used was the #1#.', function(line, what) clues.What = what mq.cmdf('/popcustom 5 The weapon used was the %s', what) end)
 
 local function updateLocation(line, where)
     if locations[where] then
@@ -210,7 +210,7 @@ local function draw()
                     mq.cmd('/squelch /nav item click')
                 end
             end
-            if currentLocation == 'Dining Hall' then
+            if currentLocation == 'Dining Hall' and mq.TLO.Spawn('Secret Passage')() then
                 ImGui.SameLine()
                 if ImGui.Button('Nav To Secret Passage') then
                     mq.cmd('/nav spawn secret passage')
