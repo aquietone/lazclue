@@ -21,16 +21,16 @@ local visitedSuspects = {
     ['Svartmane The Advisor'] = false,
 }
 local weapons = {['Candlestick']=true, ['Dagger']=true, ['Crossbow']=true, ['Flaming Mace']=true, ['Rope']=true, ['Battle Axe']=true}
-local locations = {[1]='Library',['Library']=1,[2]='Dining Hall',['Dining Hall']=2,[3]='Maze',['Maze']=3,[4]='Wedding Hall',['Wedding Hall']=4,[5]='Dragon Terrace',['Dragon Terrace']=5,[6]='Penthouse',['Penthouse']=6}
+local locations = {[7]='Entry',['Entry']=7,[1]='Library',['Library']=1,[2]='Dining Hall',['Dining Hall']=2,[3]='Maze',['Maze']=3,[4]='Wedding Hall',['Wedding Hall']=4,[5]='Dragon Terrace',['Dragon Terrace']=5,[6]='Penthouse',['Penthouse']=6}
 local locationClues = {['Broken Staff']=true,['Burned Diary']=true,['Crushed Amulet']=true,['Torn Robe']=true}
-local eliasSpawns = {['Library']='Elias in the Library',['Dining Hall']='Elias in the Dining Hall',['Maze']='Elias in the Maze',['Wedding Hall']='Elias in the Wedding Hall',['Dragon Terrace']='Elias in the Dragon Terrace',['Penthouse']='Elias in the Penthouse',}
+local eliasSpawns = {['Entry']='Elias the Ghost Hunter',['Library']='Elias in the Library',['Dining Hall']='Elias in the Dining Hall',['Maze']='Elias in the Maze',['Wedding Hall']='Elias in the Wedding Hall',['Dragon Terrace']='Elias in the Dragon Terrace',['Penthouse']='Elias in the Penthouse',}
 local suspectsByLoc = {['Library']='The Librarian',['Dining Hall']='Angry Chef',['Maze']='Ahhotep',['Wedding Hall']='Daman The Bride',['Dragon Terrace']='Disordered Spirit',['Penthouse']='Svartmane The Advisor'}
 local locNPCsByLoc = {['Library']='Liriel Mooncrest',['Dining Hall']='Thaddeus Ironspoon',['Maze']='Antediluvian',['Wedding Hall']='Alira Duskveil',['Dragon Terrace']='Black Drake',['Penthouse']='Commander Roland Grimblade'}
 local clues = {What = 'Unknown',Where = 'Unknown',Who = 'Unknown'}
 local groundspawns = {}
 local weaponNPC = nil
 local isOpen, shouldDraw = true, true
-local currentLocation = 'Maze'
+local currentLocation = 'Entry'
 local recommendedWhere = nil
 local openedPassage = false
 local blackDrakeClue = nil
@@ -151,74 +151,77 @@ local function draw()
                 if not visited then ImGui.TextColored(1,0,0,1,'%s',name) else ImGui.TextColored(0,1,0,1,'%s',name) end
             end
             ImGui.Columns(1)
-            ImGui.Separator()
-            ImGui.PushItemWidth(100)
-            ---@diagnostic disable-next-line: param-type-mismatch, cast-local-type
-            currentLocation = locations[ImGui.Combo('Current Floor', locations[currentLocation], 'Library\0Dining Hall\0Maze\0Wedding Hall\0Dragon Terrace\0Penthouse\0')]
-            ImGui.PopItemWidth()
-            if ImGui.Button('Nav To Elias') then
-                mq.cmdf('/nav spawn %s', eliasSpawns[currentLocation])
-            end
-            ImGui.SameLine()
-            if (mq.TLO.Spawn(suspectsByLoc[currentLocation]).Distance3D() or 100) < 20 then
-                if ImGui.Button(('Talk to %s'):format(suspectsByLoc[currentLocation])) then
-                    mq.cmdf('/multiline ; /mqt %s ; /timed 2 /keypress HAIL ; /timed 3 /say what', suspectsByLoc[currentLocation])
+            if currentLocation ~= 'Entry' then
+                ImGui.Separator()
+                ImGui.PushItemWidth(100)
+                ---@diagnostic disable-next-line: param-type-mismatch, cast-local-type
+                currentLocation = locations[ImGui.Combo('Current Floor', locations[currentLocation], 'Library\0Dining Hall\0Maze\0Wedding Hall\0Dragon Terrace\0Penthouse\0Entry\0')]
+                ImGui.PopItemWidth()
+                if ImGui.Button('Nav To Elias') then
+                    mq.cmdf('/nav spawn %s', eliasSpawns[currentLocation])
                 end
-            else
-                if ImGui.Button(('Nav To %s'):format(suspectsByLoc[currentLocation])) then
-                    mq.cmdf('/nav spawn %s', suspectsByLoc[currentLocation])
+                ImGui.SameLine()
+                if (mq.TLO.Spawn(suspectsByLoc[currentLocation]).Distance3D() or 100) < 125 then
+                    if ImGui.Button(('Talk to %s'):format(suspectsByLoc[currentLocation])) then
+                        mq.cmdf('/multiline ; /mqt %s ; /timed 2 /keypress HAIL ; /timed 3 /say what', suspectsByLoc[currentLocation])
+                    end
+                else
+                    if ImGui.Button(('Nav To %s'):format(suspectsByLoc[currentLocation])) then
+                        mq.cmdf('/nav spawn %s', suspectsByLoc[currentLocation])
+                    end
                 end
-            end
-            ImGui.SameLine()
-            if currentLocation == 'Penthouse' and mq.TLO.Spawn('Red Drake')() then
-                if (mq.TLO.Spawn('Red Drake').Distance3D() or 100) < 20 then
-                    if not redBlueDrakeClue then
-                        if ImGui.Button('Say Truth') then
-                            mq.cmd('/multiline ; /mqt red drake ; /timed 2 /say truth')
+                ImGui.SameLine()
+                if currentLocation == 'Penthouse' and mq.TLO.Spawn('Red Drake')() then
+                    if (mq.TLO.Spawn('Red Drake').Distance3D() or 100) < 125 then
+                        if not redBlueDrakeClue then
+                            if ImGui.Button('Say Truth') then
+                                mq.cmd('/multiline ; /mqt red drake ; /timed 2 /say truth')
+                            end
+                        else
+                            if ImGui.Button('Say '..redBlueDrakeClue) then
+                                mq.cmdf('/multiline ; /mqt drake ; /say %s', redBlueDrakeClue)
+                            end
                         end
                     else
-                        if ImGui.Button('Say '..redBlueDrakeClue) then
-                            mq.cmdf('/multiline ; /mqt drake ; /say %s', redBlueDrakeClue)
+                        if ImGui.Button('Nav To Red Drake') then
+                            mq.cmd('/nav spawn red drake | dist=15')
                         end
                     end
                 else
-                    if ImGui.Button('Nav To Red Drake') then
-                        mq.cmd('/nav spawn red drake | dist=15')
-                    end
-                end
-            else
-                if (mq.TLO.Spawn(locNPCsByLoc[currentLocation]).Distance3D() or 100) < 20 then
-                    if currentLocation == 'Dragon Terrace' and blackDrakeClue and not mq.TLO.Spawn('Secret Passage')() then
-                        if ImGui.Button('Say '..blackDrakeClue) then
-                            mq.cmdf('/multiline ; /mqt black drake ; /timed 2 /say %s', blackDrakeClue)
-                            blackDrakeClue = nil
+                    if (mq.TLO.Spawn(locNPCsByLoc[currentLocation]).Distance3D() or 100) < 125 then
+                        if currentLocation == 'Dragon Terrace' and blackDrakeClue and not mq.TLO.Spawn('Secret Passage')() then
+                            if ImGui.Button('Say '..blackDrakeClue) then
+                                mq.cmdf('/multiline ; /mqt black drake ; /timed 2 /say %s', blackDrakeClue)
+                                blackDrakeClue = nil
+                            end
+                        elseif currentLocation ~= 'Maze' then
+                            if ImGui.Button(('Talk to %s'):format(locNPCsByLoc[currentLocation])) then
+                                mq.cmdf('/multiline ; /mqt %s ; /timed 2 /keypress HAIL', locNPCsByLoc[currentLocation])
+                            end
                         end
-                    elseif currentLocation ~= 'Maze' then
-                        if ImGui.Button(('Talk to %s'):format(locNPCsByLoc[currentLocation])) then
-                            mq.cmdf('/multiline ; /mqt %s ; /timed 2 /keypress HAIL', locNPCsByLoc[currentLocation])
+                    else
+                        if ImGui.Button(('Nav To %s'):format(locNPCsByLoc[currentLocation])) then
+                            mq.cmdf('/nav spawn %s', locNPCsByLoc[currentLocation])
                         end
                     end
-                else
-                    if ImGui.Button(('Nav To %s'):format(locNPCsByLoc[currentLocation])) then
-                        mq.cmdf('/nav spawn %s', locNPCsByLoc[currentLocation])
+                end
+                if ImGui.Button('Nav To Groundspawn') then
+                    mq.cmd('/itemtar')
+                    if mq.TLO.ItemTarget() then
+                        mq.cmd('/squelch /nav item click')
                     end
                 end
-            end
-            if ImGui.Button('Nav To Groundspawn') then
-                mq.cmd('/itemtar')
-                if mq.TLO.ItemTarget() then
-                    mq.cmd('/squelch /nav item click')
-                end
-            end
-            if currentLocation == 'Dining Hall' and mq.TLO.Spawn('Secret Passage')() then
-                ImGui.SameLine()
-                if ImGui.Button('Nav To Secret Passage') then
-                    mq.cmd('/nav spawn secret passage')
+                if currentLocation == 'Dining Hall' and mq.TLO.Spawn('Secret Passage')() then
+                    ImGui.SameLine()
+                    if ImGui.Button('Nav To Secret Passage') then
+                        mq.cmd('/nav spawn secret passage')
+                    end
                 end
             end
             ImGui.Separator()
             ImGui.Text('Click next to Elias to go to:')
             for i,location in ipairs(locations) do
+                if location == 'Entry' then break end
                 local shouldPopColor = false
                 if recommendedWhere == location then ImGui.PushStyleColor(ImGuiCol.Button, 0,1,0,1) shouldPopColor = true end
                 if ImGui.Button(location) then
