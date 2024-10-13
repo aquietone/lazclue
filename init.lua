@@ -127,8 +127,26 @@ local function draw()
                 hailedElias = true
                 mq.cmd('/multiline ; /mqt elias ; /timed 2 /keypress HAIL ; /timed 3 /keypress HAIL ; /timed 4 /say where')
             end
-        elseif zone ~= 'frozenshadow' then
-            ImGui.Text('Go to Plane of Mischief (mischiefplane)')
+        elseif zone == 'poknowledge' or zone == 'nexus' then
+            if (mq.TLO.Spawn('Valium').Distance3D() or 100) > 75 then
+                if ImGui.Button('Nav to Valium') then
+                    mq.cmdf('/nav spawn Valium')
+                end
+            else
+                if ImGui.Button('Say mischiefplane') then
+                    mq.cmdf('/multiline ; /mqt Valium ; /timed 2 /say mischiefplane')
+                end
+            end
+        elseif zone == 'freeporttemple' then
+            if (mq.TLO.Spawn('Klonopin').Distance3D() or 100) > 75 then
+                if ImGui.Button('Nav to Klonopin') then
+                    mq.cmdf('/nav spawn Klonopin')
+                end
+            else
+                if ImGui.Button('Say mischiefplane') then
+                    mq.cmdf('/multiline ; /mqt Klonopin ; /timed 2 /say mischiefplane')
+                end
+            end
         elseif zone == 'frozenshadow' then
             ImGui.Text('Who: ') ImGui.SameLine()
             if clues.Who == 'Unknown' then ImGui.TextColored(1,0,0,1,'%s',clues.Who) else ImGui.TextColored(0,1,0,1,'%s',clues.Who) end ImGui.SameLine()
